@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-b2z+KMwW/ljzN1ZRryhFYpWG+9izwWjDEIjiPDE3td6xepumDzWpOTFy4fN/AZ5kxjzIjxuvyOn0QWlv3uI02g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<style>body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f9fbe7;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .container {
+    text-align: center;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 600px;
+    margin: auto;
+  }
+  
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  h1 {
+    color: #3949ab;
+    margin: 0;
+  }
+  
+  #start-button {
+    background-color: #4caf50;
+    color: #ffffff;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  
+  #start-button:hover {
+    background-color: #388e3c;
+  }
+  
+  .game-container {
+    margin-top: 30px;
+  }
+  
+  .alphabet-board {
+    font-size: 24px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .alphabet-letter {
+    width: 40px;
+    height: 40px;
+    background-color: #ef5350;
+    border: 2px solid #c62828;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #ffffff;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .alphabet-letter:hover {
+    background-color: #c62828;
+  }
+  
+  .image-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+  
+  .image-card {
+    width: 120px;
+    height: 120px;
+    background-color: #29b6f6;
+    border: 2px solid #0277bd;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    color: #ffffff;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+/* ... (wcześniejsze style) */
+
+.result-correct {
+  background-color: #4caf50;
+  color: #ffffff;
+  padding: 10px;
+  border-radius: 5px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+.result-incorrect {
+  background-color: #f44336;
+  color: #ffffff;
+  padding: 10px;
+  border-radius: 5px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+.score {
+      font-size: 20px;
+      margin-bottom: 30px;
+      color: #3949ab;
+    }
+
+
+  </style>
+  <title>Śladami liter</title>'
+
+</head>
+<body>
+    <div class="container">
+        <header>
+          <h1>Śladami liter</h1>
+          <button id="start-button"><i class="fas fa-play"></i> Rozpocznij grę</button>
+        </header>
+        <div class="game-container">
+          <div id="alphabet-board" class="alphabet-board"></div>
+          <div id="image-cards" class="image-cards"></div>
+          <div id="timer" class="timer"></div>
+          <div id="score" class="score">Dobre: 0 / Złe: 0</div>
+        </div>
+  <script >
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  const alphabetBoard = document.getElementById('alphabet-board');
+  const imageCardsContainer = document.getElementById('image-cards');
+  const startButton = document.getElementById('start-button');
+  const timerElement = document.getElementById('timer');
+  const scoreElement = document.getElementById('score');
+  const alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+
+  let timer;
+  let selectedLetter;
+  let correctAnswers = 0;
+  let incorrectAnswers = 0;
+  let gameStarted = false;
+
+  function generateAlphabetBoard() {
+    alphabet.forEach(letter => {
+      const letterDiv = document.createElement('div');
+      letterDiv.className = 'alphabet-letter';
+      letterDiv.textContent = letter;
+      letterDiv.addEventListener('click', () => gameStarted && selectLetter(letter));
+      alphabetBoard.appendChild(letterDiv);
+    });
+  }
+
+  function generateImageCards() {
+    const images = ['motyl', 'kot', 'samolot', 'słoń', 'kwiat', 'ryba', 'serce', 'dom', 'gruszka', 'auto'];
+    images.forEach(image => {
+      const imageCard = document.createElement('div');
+      imageCard.className = 'image-card';
+      imageCard.textContent = image.toUpperCase();
+      imageCard.addEventListener('click', () => gameStarted && checkMatch(image.toUpperCase()));
+      imageCardsContainer.appendChild(imageCard);
+    });
+  }
+
+  function selectLetter(letter) {
+    selectedLetter = letter;
+    console.log('Wybrana litera:', selectedLetter);
+  }
+
+  function startGame() {
+    resetScore();
+    timer = 30; // czas w sekundach
+    updateTimerDisplay();
+    gameStarted = true;
+
+    // Tutaj możesz dodać logikę losowania litery z planszy i pokazywania jej uczniowi
+
+    startTimer();
+  }
+
+  function checkMatch(selectedImage) {
+    if (selectedImage.startsWith(selectedLetter)) {
+      showResult('Dobra odpowiedź!', true);
+      correctAnswers++;
+    } else {
+      showResult('Zła odpowiedź!', false);
+      incorrectAnswers++;
+    }
+
+    updateScore();
+  }
+
+  function showResult(message, isCorrect) {
+    const resultMessage = document.createElement('div');
+    resultMessage.className = isCorrect ? 'result-correct' : 'result-incorrect';
+    resultMessage.textContent = message;
+
+    document.body.appendChild(resultMessage);
+
+    setTimeout(() => {
+      document.body.removeChild(resultMessage);
+    }, 1000);
+  }
+
+  function startTimer() {
+    timerElement.textContent = timer;
+
+    const countdown = setInterval(() => {
+      timer--;
+
+      if (timer < 0) {
+        clearInterval(countdown);
+        timerElement.textContent = 'Czas minął!';
+        gameStarted = false; // Zatrzymaj możliwość klikania po zakończeniu gry
+        // Tutaj możesz dodać logikę zakończenia gry
+      } else {
+        updateTimerDisplay();
+      }
+    }, 1000);
+  }
+
+  function updateTimerDisplay() {
+    timerElement.textContent = `Czas: ${timer}s`;
+  }
+
+  function updateScore() {
+    scoreElement.textContent = `Dobre: ${correctAnswers} / Złe: ${incorrectAnswers}`;
+  }
+
+  function resetScore() {
+    correctAnswers = 0;
+    incorrectAnswers = 0;
+    updateScore();
+  }
+
+  generateAlphabetBoard();
+  generateImageCards();
+
+  startButton.addEventListener('click', startGame);
+});
+
+
+
+  </script>
+</body>
+</html>
